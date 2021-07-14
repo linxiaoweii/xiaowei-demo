@@ -1,0 +1,260 @@
+每个vuex应用的核心就是store（仓库），store基本上是一个容器，它包含着你的应用中大部分的状态（state），vuex和单纯的全局对象有一下不同：
+1.vuex的状态存储是响应式的，当vuex组件从store中读取状态的时候，若store中的状态发生变化，那么相应的组件也会响应地得到高效更新。
+2.我们不能直接改变store中的状态，改变store中的状态的唯一途径就是显示地提交（commit）mutation。这样使得我们可以方便地跟踪每一个状态的变化。
+
+关于：
+Vuex是适用于在vue项目开发时使用的状态管理工具。试想一下，如果在一个项目开发中频繁的使用组件传参的方式来同步data中的值，一旦项目庞大，管理和维护这些值将是相当棘手的工作。为此，vue为这些被多个组件频繁使用的值提供了一个系统-vuex，在具有vuex的vue项目中，我们只需要把这些值定义在vuex中，即在整个vue项目的组件中使用。
+安装：
+vuex是在搭建vue-cli之后进行的
+npm i vuex -s
+在项目的根目录下新增一个store文件夹，在该文件夹内创建node.js
+在项目的src文件应该是这样
+App.vue
+main.vue
+assets-logo.png
+components-helloWord.vue
+router-index.js
+store-index.js
+使用：
+1.初始化store里面的内容
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+//挂载Vuex
+Vue.use(Vuex)
+
+//创建VueX对象
+const store = new Vuex.Store({
+    state:{
+        //存放的键值对就是所要管理的状态
+        name:'helloVueX'
+    }
+})
+
+export default store
+
+将store挂载到当前项目的vue实例当中去
+打开main.js
+import Vue from 'vue'
+import App from './App'
+import router from './router'
+import store from './store'
+
+Vue.config.productionTip = false
+
+/* eslint-disable no-new */
+new Vue({
+  el: '#app',
+  router,
+  store,  //store:store 和router一样，将我们创建的Vuex实例挂载到这个vue实例中
+  render: h => h(App)
+})
+
+例如在App.vue中，我们要将state中定义的name拿来在h1标签中显示。
+<template>
+    <div id='app'>
+        name:
+     <h1>{{ $store.state.name }}</h1>
+    </div>
+</template>
+或者要在组件方法中使用
+...,
+methods:{
+    add(){
+      console.log(this.$store.state.name)
+    }
+},
+...
+注意不要在此处更改state中的状态的值，后文中将会说明。
+
+Vuex中的核心内容
+在vuex对象中，其实不止有state，还有用来操作state中数据的方法集，以及当我们需要对state中的数据需要加工的方法集等等成员。
+成员列表：
+state存放状态
+mutations state成员操作
+getter加工state成员给外界
+actions异步操作
+modules模块化管理
+
+
+vuex概述
+1.组件之间共享数据的方式
+父向子传值：v-bind属性绑定
+子向父传值：v-on时事件绑定
+兄弟组件之间共享数据： EvenBus
+$on	接收数据的那个组件
+$emit 发送数据的那个组件
+
+Vuex是实现组件全局状态（数据）管理的一种机制，可以方便地实现组件之间的数据的共享。
+使用vuex统一管理状态的好处
+1.能够在vuex中集中管理共享的数据，易于开发和后期维护
+2.能够高效地实现组件之间的数据共享，提高开发效率
+3.存储在vuex中的数据都是响应式的，能够实时保持数据与页面的同步
+什么样的数据适合存储到vuex中
+一般情况下，只有组件之间共享的数据，才有必要存储到vuex中；对于组件中的私有数据，依旧存储在组件自身data中即可。
+
+安装vuex依赖包
+npm install vuex --save
+导入vuex包
+import Vuex from 'vuex'
+Vue.use(Vuex)
+创建store对象
+const store=new Vuex.Store({
+	//state中存放的就是全局共享的数据
+	state:{count:0}
+})
+
+State
+提供唯一的公共数据源，所有的共享的数据都要统一放到Store的State中进行存储。
+//创建store数据源，提供唯一公共数据
+const store=new Vuex.Store({
+	//state中存放的就是全局共享的数据
+	state:{count:0}
+})
+组件访问State中数据的第一种方式
+this.$store.state.全局数据名称
+组件访问State中数据的第二种方式
+//1.从vuex中按需导入mapState函数
+import {mapState} from 'vuex'
+通过刚才导入的mapState函数，将当前组件需要的全局数据，映射为当前组件的computed计算属性：
+//2.将全局数据，映射为当前组件的计算属性
+computed:{...mapState(['count'])}
+
+Mutation
+用于变更Store中的数据
+1.只能通过mutation变更Store数据，不可以直接操作Store中的数据
+2.通过这种方式虽然操作起来稍微繁琐一些，但是可以集中监控所有数据的变化。
+//定义Mutation
+const store=new Vuex.Store({
+	//state中存放的就是全局共享的数据
+	state:{count:0},
+	mutations:{
+		add(state){
+		//第一参数永远都是state形参
+		//变更状态
+		state.count++
+		}
+	}
+})
+//触发mutation
+methods:{
+	handle1(){
+	//触发mutations的第一种方式
+		this.$store.commit('add')
+	}
+}
+
+可以触发mutations时传递参数
+const store=new Vuex.Store({
+	//state中存放的就是全局共享的数据
+	state:{count:0},
+	mutations:{
+		addN(state, step){
+		//变更状态
+		state.count+=step
+		}
+	}
+})
+//触发mutation
+methods:{
+	handle2(){
+	//在调用commit函数（commit的作用，就是调用某个mutation函数）
+	//触发mutations时携带参数
+		this.$store.commit('addN',3)
+	}
+}
+
+this.$store.commit()是触发mutations的第一种方式，触发mutations的第二种方式：
+//1.从vuex中按需导入mapMutations函数
+import {mapMutations} from 'vuex'
+通过刚才导入的mapMutations函数，将需要的mutations函数，映射为当前组件的methods方法。
+//2.将指定的mutations函数，映射为当前组件的methods函数
+methods:{
+	... mapMutations(['add','addN']),
+	btnHandle1(){
+		this.add()
+		this.addN()
+	}
+}
+###不要在mutations函数中，执行异步操作
+Action
+用于处理异步任务
+如果通过异步操作变更数据，必须通过Action，而不能使用Mutation，但是Action中还是要通过触发Mutation的方式间接变更数据。
+const store=new Vuex.Store({
+	//state中存放的就是全局共享的数据
+	state:{count:0},
+	mutations:{
+		addN(state){
+		//变更状态
+		state.count++
+		}
+	}，
+	actions:{
+		addAsync(context){
+	//在actions中，不能直接修改state中的数据
+	//必须通过context.commit()触发某个mutation才行
+			setTimeout(()=>{context.commit('add')},1000)
+		}
+	}
+})
+methods:{
+	//这里的dispatch函数，专门用来触发action函数	
+	btnHandle3(){
+		this.$store.dispatch('addAsync')
+	}
+}
+
+Action触发actions异步任务时携带参数
+const store=new Vuex.Store({
+	//state中存放的就是全局共享的数据
+	state:{count:0},
+	mutations:{
+		addN(state, step){
+		state.count+=step
+		}
+	}，
+	actions:{
+		addAsync(context，step){
+			setTimeout(()=>{context.commit('add',step)},1000)
+		}
+	}
+})
+methods:{
+	//在调用dispatch函数
+	//触发actions时携带参数
+	btnHandle4(){
+		this.$store.dispatch('addAsync',5)
+	}
+}
+this.$store.dispatch()是触发actions的第一种方式，触发actions的第二种方式：
+//1.从vuex中按需导入mapActions函数
+import {mapActions} from 'vuex'
+通过刚才导入的mapActions函数，将需要的actions函数，映射为当前组件的methods方法：
+//2.将指定的actions函数，映射为当前组件的methods函数
+methods:{
+	... mapActions(['addAsync','addNAsync'])
+}
+
+Getter用于对Store中的数据进行加工处理形成新的数据
+1.Getter可以对Store中已有的数据加工处理之后形成新的数据，类似于Vue的计算属性
+2.Store中数据发生变化，Getter的数据也会跟着变化
+//定义Getter
+const store=new Vuex.Store({
+	state:{count:0},
+	getters:{
+		showNum:state=>{ return '当前最新的数量是['+state.count+']'
+		}
+	}
+})
+使用Getter得第一种方式
+this.$store.getters.名称
+使用getters的第二种方式
+import {mapGetters} from 'vuex'
+computed:{... mapGetters(['showNum'])}
+
+
+
+
+
+
+
