@@ -1,0 +1,95 @@
+vue路由
+路由：前端路由与后端路由
+一、后端路由：根据不同的用户URL请求，返回不同的内容。
+本质：URL请求地址与服务器资源之间的对应关系。
+1.SPA（Single Page Application 单页面应用程序）
+后端渲染存在性能问题。
+Ajax前端渲染，提高了性能，但是不支持浏览器的前进后退操作。
+SPA单页面应用程序：整个网站只有一个页面，内容的变化通过Ajax局部更新实现，同时支持浏览器地址栏前进和后退的功能。
+SPA实现原理之一：基于URL地址的hash（hash的变化会导致浏览器记录访问历史的变化、但是hash的变化不会触发新的URL请求）。
+在实现SPA过程中，最核心的技术就是前端路由。
+二、前端路由：根据不同的用户事件，现实不同的页面内容。
+本质：用户事件与事件函数之间的对应关系
+前端路由负责事件监听，触发事件后，通过事件函数渲染不同的内容。
+三、实现简易的前端路由
+基于URL中的hash实现（点击菜单的时候改变URL的hash值，根据hash的变化控制组件的切换）
+监听window的onhashchange事件，根据获取到的最新的hash值，切换要现实的组件的名称
+window.onhashchange=function(){//通过location.hash获取到最新的hash值}
+
+三、vue router
+是vue.js官方的路由管理器，它和vue.js的核心深度集成，可以非常方便的用于SPA应用程序的开发。包含的功能有：
+支持HTML5历史模式或hash模式
+支持嵌套路由
+支持路由参数
+支持编程式路由
+支持命名路由
+四、vue-router的基本使用
+引入相关的库文件
+添加路由链接
+添加路由填充位
+定义路由的组件
+配置路由规则并创建路由的实例
+把路由挂在挂载到vue根实例上
+//创建路由的实例对象
+var router=new VueRouter({
+//routers	是路由规则数组
+router:[
+	//每个路由规则都是一个配置对象，至少包含path和compnent两个属
+	//path表示当前路由规则匹配的hash地址
+	//component 表示当前路由规则对应要展示的组件
+	{path:'',component:User},
+	{path:''},component:Register}
+]})
+
+路由重定向
+路由重定向指的是：用户在访问地址A的时候，强制用户跳转到地址c，从而展示特定的组件页面；通过路由规则的redirect属性，制定一个新的路由地址，可以很方便的设置路由的重定向
+var router=new VueRouter({
+router:[
+	//其中，path表示需要被重定向的原地址，redirect表示将要被重定向的新地址
+	{path:'/',redirect:'/user'},	
+	{path:'/user',component:User},
+	{path:'register'},component:Register}
+]})
+
+路由嵌套
+定义路由规则：
+var router= new VueRouter({
+	router:[
+	{path:'/user',component:User},
+	{path:'/register',
+	component: Register,
+	//
+	children:[
+		{path:'/register/tab1',component:Tab1},
+		{path:'/register/tab2',component: Tab2}
+			]
+		}
+	]
+})
+
+动态匹配路由的基本用法
+应用场景：通过动态路由参数的模式进行路由的匹配
+var router= new VueRouter({
+	router:[
+	//动态路径的参数，以冒号开头
+	{path:'/user/:id',component:User}
+	]
+})
+const User={$router.params获取路由参数的id
+	//路由组件中通过
+	template:'<div>User {{$router.params.id}}</div>'
+}
+
+命名路由的配置规则
+为了更加方便的表示路由的路径，可以给路由规则起个别名，即为～
+var router= new VueRouter({
+	router:[
+	{path:'/user/:id',
+	name:'user',
+	component:User}
+	]
+})
+<router-link :to="{name:'user',params:{id:123}}">User</router-link>
+router.push({name:'user',params:{id:123}})
+
+
