@@ -1,0 +1,303 @@
+Vue脚手架的一些说明
+1.通过package.json配置项目
+//必须是符合规范的json语法
+"vue":{
+	"devServer":{
+		"port":"8888",//更改了8080端口
+		"open":true//npm run server命令之后 可以自动打开
+		}
+	}
+注意：我们不推进使用这种方式去配置，因为在package.json主要用来管理包的配置信息；为了方便维护，推荐将vue脚手架相关的配置，单独定义到vue.config.js配置文件中。
+2.通过单独的配置文件配置项目
+@1在项目的根目录下创建文件vue.config.js
+@2在该文件中进行相关配置，从而覆盖默认配置
+//vue.config.js
+module.exports={
+	devServer:{port:8878}
+}
+
+前端工程化
+1.1模块化概述
+传统开发模式的主要问题
+@1命名冲突
+@2文件依赖
+通过模块化解决上述问题
+@1模块化就是把单独的一个功能封装到一个模块（文件）中，模块之间相互隔离，但是可以通过特定的接口公开内部成员供其他模块使用，也可以依赖的别的模块。
+@2模块化开发的好处：方便代码的重用，从而提升开发效率，并且方便后期的维护。
+1.2浏览器端的模块化规范
+@AMD 代表require.js
+@CMD 代表sea.js
+1.3服务器端模块化规范
+CommonJS
+@1模块分为单文件模块与包
+@2模块成员导出：module.exports和exports
+@3模块化成员导入： require('模块标识符')
+1.4大一统的模块化开发-ES6模块化
+ES6模块化开发是浏览器端与服务器端通用的模块化开发规范
+ES6模块化规范中定义：
+每个js文件都是一个独立的模块
+导入模块成员使用import关键字
+暴露模块化成员使用export关键字
+1.4Node.js通过babel体验ES6模块化
+@1安装babel插件
+@2项目根目录创建文件：babel.config.js
+里面内容如：
+const presets=[
+["@babel/env",{
+target:{
+	edg：“17”，
+	firefox：“60”，
+	chorme：“67”，
+	safari：“11.1”
+		}
+	}]
+]
+module.exports={presets}
+1.5默认导出与默认导入
+默认导出语法 export default默认导出的成员
+默认导入语法 import 接收名称 from '模块标识符'
+//当前文件的模块为m1.js
+//定义私有成员a和c
+let a=10
+let b=20
+//外界访问不到d 因为没有暴露出去
+let d=30
+function show(){}
+//将本模块的私有成员暴露出去，供其他模块使用
+export default{a,c,show}
+
+//此时切换到index.js文件
+import m1 from './m1.js'
+console.log(m1)
+//打印输出结果：{a:10,c:20,show:[Function:show]}
+注意：每个模块中，只允许使用唯一的一次export default，否则会报错
+1.6按需导出与按需导入
+按需导出语法 export let s1=10
+按需导入语法 import {s1} from '模块标识符'
+//当前模块m1.js 导出
+export let s1="aaa"
+//当前模块为index.js 导入
+import {s1} from './m1.js'
+
+注意 按需导入和默认导入同时存在 不冲突
+import m1,{s1} from './m1.js'
+注意：每个模块，可以使用多次按需导出
+1.7直接导入并执行代码
+只想单纯执行某个模块中的代码，并不需要得到模块中向外暴露的成员，此时可以直接导入并执行模块中的代码
+//当前文件为模块m2.js
+//for循环
+for(let i=0;i<=3;i++){console.log(i)}
+//直接导入并执行模块中的代码
+import './m2.js'
+
+###webpack
+Webpack前端项目构建工具（打包工具）
+提供了友好的模块化支持，以及代码压缩混淆、处理js兼容性问题、性能优化等强大的功能。
+
+webpack的使用
+在项目中安装和配置webpack
+@1运行npm install webpack webpack-cli -D 命令。安装webpack相关的包
+@2在根目录中，创建名为webpack.config.js的webpack配置文件
+@3在webpack的配置文件中，初始化如下的基本配置：
+module.exports={mode：'development'//mode用来指定构建模式}
+@4在package.json配置文件中scripts节点下，新增dev脚本如下：
+"script":{
+"dev":"webpack"//script节点下的脚本，可以通过npm run执行
+}
+@5在终端中运行npm run dev命令，启动webpack进行项目打包 会产生一个dist文件 文件里的main.js
+1.8配置打包入口与出口
+Webpack的4.x版本中的默认约定
+打包的入口文件为src->index.js
+打包的输出文件为dist->main.js
+如果我们要修改打包的入口与出口，可以在webpack.config.js中新增如下的信息
+const path=require('path')//导入node.js中专门操作路径的模块
+module.exports={
+entry:path.join(__dirname,'./src/index.js'),//打包入口文件的路径
+output:{
+path.join(__dirname,'./dist'),//输出文件的存放路径
+filename:''bundle.js'//输出文件的名称
+}
+}
+
+webpack自动打包功能
+@1运行npm install webpack-dev-server -D命令，安装支持项目自动打包工具
+@2修改package.json->scripts中的dev命令如下
+"script":{
+"dev":"webpack-dev-server"//script节点下的脚本，可以通过npm run执行
+}
+@3src->index.html中，script脚本的引用路径，修改为“./buldle.js”
+@4运行npm run dev命令，重新进行打包
+@5在浏览器中访问http://localhost:8080地址，查看自动打包的结果
+
+配置自动打包相关参数
+package.json中配置
+--open打包完成后自动打开浏览器页面
+--host配置IP地址
+--port配置端口
+"script":{
+"dev":"webpack-dev-server --open --host 127.0.0.1 --port 8888"
+}//打包完自动打开浏览器
+
+webpack加载器
+1.通过loader打包非js模块
+在实际开发过程中，webpack默认只能打包js文件模块，其他非js后缀名的模块，webpack默认不处理，需要调用loader加载器才能正常打包，否则会报错。
+loader加载器可以辅助webpack打包处理特定的文件模块
+less-loader可以打包处理 o.less相关文件
+sass-loader可以打包处理o.scss相关的文件
+url-loader可以打包处理css中与url路径相关的文件
+
+webpack中加载器的基本使用
+1.打包处理css文件
+@1运行npm i style-loader css-loader -D命令，处理css文件的loader
+@2webpack.config.js的module->rules数组中，添加loader规则如下
+//所有第三方文件模块的匹配规则
+modules:{
+Rules:[{test:/\.css$/,use:['style-loader','css-loader']}]
+}///\.css$/表示正则
+其中test表示匹配的文件类型，use表示对应要调用的loader
+注意：use数组中指定的loader顺序是固定的
+多个loader的调用顺序是：从后往前调用
+
+1.打包处理less文件
+@1运行npm i less-loader less -D命令
+@2webpack.config.js的module->rules数组中，添加loader规则如下
+//所有第三方文件模块的匹配规则
+modules:{
+Rules:[{test:/\.less$/,use:['style-loader','css-loader','less-loader']}]
+}///\.less$/表示正则
+别忘在index.js中 import './css/1.less'引入样式
+
+1.打包处理scss文件
+@1运行npm i sass-loader node-sass -D命令
+@2webpack.config.js的module->rules数组中，添加loader规则如下
+//所有第三方文件模块的匹配规则
+modules:{
+Rules:[{test:/\.scss$/,use:['style-loader','css-loader','sass-loader']}]
+}///\.scss$/表示正则
+别忘在index.js中 import './css/1.scss'引入样式
+
+配置postCSS自动添加css的兼容前缀
+@1 运行npm I postcss-loader autoprefixer -D命令
+@2 在项目的根目录下创建postcss的配置文件postcss.config.js并出示话如下配置
+const autoprefixer=require('autoprefixer')//导入自动添加前缀的插件
+module.exports={
+plugins:[autoprefixer]//挂载插件
+}
+@3 在webpack.config.js的module->rules数组中，添加loader规则如下
+//所有第三方文件模块的匹配规则
+modules:{
+rules:[{test:/\.css$/,use:['style-loader','css-loader','postcss-loader']}]  
+}
+
+打包样式表中的图片和字体文件
+@1 运行npm i url-loader file-loader -D命令
+@2 在webpack.config.js的module->rules数组中，添加loader规则如下
+//所有第三方文件模块的匹配规则
+modules:{
+rules:[{test:/\.jpg|png|gif|bmp|ttf|eot|svg|woff|woff2$/,
+use:'url-loader?limit='  
+}
+其中?之后的是loader的参数项
+Limit用来指定图片的大小，单位是字节（byte），只有小于limit大小的图片，才会被转换为base64图片
+
+base64图片：
+图片的base64编码就是可以将一张图片数据编码成一串字符串，使用该字符串代替图像地址url。
+使用base64图片的优点有一下几种
+1、减少http请求次数
+2、采用base64的图片随着页面一起下载，因此不会存在跨域请求的问题
+3、没有图片更新要上传图片，因此不会造成清理图片缓存的问题
+使用base64图片的缺点
+1、增加css文件的大小
+2、浏览器兼容性
+3、解析css的时间增长
+
+什么是 CRP？
+CRP又称关键渲染路径，引用MDN对它的解释：
+关键渲染路径是指浏览器通过把 HTML、CSS 和 JavaScript 转化成屏幕上的像素的步骤顺序。优化关键渲染路径可以提高渲染性能。关键渲染路径包含了 Document Object Model (DOM)，CSS Object Model (CSSOM)，渲染树和布局。
+
+打包处理js文件中的高级语法
+@1 安装babel转换器相关的包：npm i babel-loader @babel/core @babel/runtime -D
+@2 安装babel语法插件的相关包：npm I @babel/preset-env @babel/plugin-transform-runtime @babel/plugin-proposal-class-properties -D
+@3 在项目目录中，创建babel配置文件babel.config.js并初始化基本配置如下：
+module.exports={
+presets:['@babel/preset-env']
+plugin:['@babel/plugin-transform-runtime','@babel/plugin-proposal-class-properties']
+}
+@4 在webpack.config.js的module->rules数组中，添加loader规则如下：
+//exclude为排除项，表示babel-loader不需要处理node_modules中的js文件
+{test:/\.js$/,use:'babel-loader',exclude:/node_modules/}
+
+
+Vue单文件组件
+传统组件的问题：
+1.全局定义的组件必须保证组件的名称不重复
+2.字符串模版缺乏语法高亮，在html有多行的时候，需要用到‘\’
+3.不支持css意味着当html和js组件化时，css明显被遗漏
+4.没有构建步骤限制，只能使用html和es5 js，而不能使用预处理器（如：babel）
+解决方案：
+针对传统组件的问题，vue提供了一个解决方案---使用vue单文件组件
+组成结构：
+Template组件的模版区域“用于定义vue组件的模版内容”
+script业务逻辑区域“export default{私有数据、处理函数、其他}”
+style样式区域
+
+webpack项目中使用vue
+@1运行npm i vue -S 安装vue
+@2在src->index.js入口文件中，通过import Vue from 'vue'导入vue的构造函数
+@3创建vue的实例对象，并指定要控制的el区域
+@4通过render函数渲染App组件
+//导入Vue构造函数
+import Vue from ‘vue’
+//导入App根组件
+import App from ‘./component/App.vue’
+
+const vm=new Vue({
+//指定vm实例要控制的页面区域
+el:'#app',
+//通过render函数，把指定的组件渲染到el区域
+render:h=>h(App)
+})
+
+webpack打包发布
+上线之前需要通过webpack将应用进行整体打包，可以通过package.json文件配置打包命令。
+//在package.json文件中配置webpack打包命令
+//该命令默认加载项目根目录中的webpack.config.js配置文件
+"script":{
+//用于打包命令
+"build":"webpack -p"
+//用于开发调试的命令
+"dev":"webpack"
+}
+
+
+####插槽(渲染在父元素上渲染)
+例子：具名插槽
+子组件：
+<div class="container>
+	<p>实现具名插槽</p>
+	<slot name="hello>hello插槽</slot>
+</div>
+父组件：
+<UseComponent>
+	<div slot="hello>
+		<p>hhh1</p>
+		<p>hhh1</p>
+	</div>
+</UseComponent>
+
+插槽传递数据
+子组件：
+<div class="container>
+	<p>实现具名插槽</p>
+	<slot name="hello v-bind:text="text>hello插槽</slot>
+</div>
+data(){ text:"woshichacao" }
+父组件：
+<UseComponent>
+	<div slot="hello slot-scope="props>
+		<p>hhh1--{{props.text}}</p>
+		<p>hhh1</p>
+	</div>
+</UseComponent>
+
+
